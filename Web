@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>f0und_y0u.exe</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --neon-green: #00ff66;
+            --terminal-dark: #050505;
+            --alert-red: #ff003c;
+            --cyber-blue: #00f0ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--terminal-dark);
+            color: var(--neon-green);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Real Matrix Rain Canvas */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.25;
+        }
+
+        .terminal-box {
+            position: relative;
+            z-index: 2;
+            width: 90%;
+            max-width: 650px;
+            background: rgba(5, 5, 5, 0.85);
+            border: 2px solid var(--neon-green);
+            box-shadow: 0 0 30px rgba(0, 255, 102, 0.3);
+            border-radius: 8px;
+            padding: 25px;
+            overflow: hidden;
+        }
+
+        /* Top Bar of Terminal */
+        .terminal-header {
+            background: rgba(0, 255, 102, 0.1);
+            margin: -25px -25px 20px -25px;
+            padding: 10px 20px;
+            border-bottom: 2px solid var(--neon-green);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        .dots span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--neon-green);
+            margin-right: 5px;
+        }
+
+        /* Log text simulation */
+        .log-line {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            text-shadow: 0 0 3px var(--neon-green);
+        }
+
+        .question-screen h1 {
+            font-size: 1.6rem;
+            margin: 30px 0;
+            line-height: 1.5;
+            color: #fff;
+            text-shadow: 0 0 8px var(--neon-green);
+        }
+
+        /* Cyberpunk Buttons */
+        .btn-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            height: 100px;
+            align-items: center;
+        }
+
+        .cyber-btn {
+            background: transparent;
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            padding: 14px 35px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+            outline: none;
+            box-shadow: inset 0 0 0 0 rgba(0, 255, 102, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .cyber-btn:hover {
+            background: var(--neon-green);
+            color: var(--terminal-dark);
+            box-shadow: 0 0 25px var(--neon-green);
+        }
+
+        #no-btn {
+            position: absolute;
+            transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 99;
+        }
+
+        /* Secret Reveal Panel */
+        .secret-panel {
+            text-align: center;
+            animation: bootUp 0.5s ease-out;
+        }
+
+        .secret-panel h2 {
+            font-size: 2.2rem;
+            color: var(--cyber-blue);
+            text-shadow: 0 0 15px var(--cyber-blue);
+            margin-bottom: 15px;
+        }
+
+        .surprise-card {
+            border: 2px dashed var(--cyber-blue);
+            background: rgba(0, 240, 255, 0.05);
+            padding: 25px;
+            border-radius: 10px;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+
+        /* Anti-Cheat Screen */
+        #glitch-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 99999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--alert-red);
+            font-weight: bold;
+            text-align: center;
+            animation: screenShake 0.1s infinite;
+        }
+
+        .alert-title {
+            font-size: 3rem;
+            letter-spacing: 5px;
+            text-shadow: 0 0 10px var(--alert-red);
+        }
+
+        /* Utility classes */
+        .hidden { display: none !important; }
+        .red-text { color: var(--alert-red) !important; text-shadow: 0 0 5px var(--alert-red) !important;}
+
+        @keyframes screenShake {
+            0% { transform: translate(2px, 1px) rotate(0deg); }
+            100% { transform: translate(-1px, -2px) rotate(1deg); }
+        }
+
+        @keyframes bootUp {
+            from { opacity: 0; transform: scale(0.8) translateY(50px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix"></canvas>
+
+    <div class="terminal-box" id="main-terminal">
+        <div class="terminal-header">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <div>SECURE_SHELL://NANDAN_NET</div>
+            <div>v4.8.2</div>
+        </div>
+
+        <div id="boot-loader">
+            <div class="log-line">> Initializing safe bypass protocols...</div>
+            <div class="log-line" id="log-1" style="display:none">> Scanning user hardware... <span style="color:#fff;">TARGET LOCATED</span></div>
+            <div class="log-line" id="log-2" style="display:none">> Bypassing firewalls... <span style="color:#fff;">SUCCESS</span></div>
+            <div class="log-line" id="log-3" style="display:none">> Decrypting absolute core requirement...</div>
+        </div>
+
+        <div class="question-screen hidden" id="challenge-screen">
+            <h1>[CRITICAL TASK] <br>Are you ready to be the most amazing person in Nandan's life?</h1>
+            <div class="btn-wrapper">
+                <button class="cyber-btn" id="yes-btn">YES</button>
+                <button class="cyber-btn" id="no-btn">NO</button>
+            </div>
+        </div>
+
+        <div class="secret-panel hidden" id="surprise-screen">
+            <h2>ACCESS UNLOCKED</h2>
+            <div class="surprise-card">
+                <p style="font-size: 1.2rem; margin-bottom: 15px; color: var(--cyber-blue);">⚡ LEVEL 100 FRIENDSHIP ACTIVATED ⚡</p>
+                <p>"I knew you couldn't beat the system! Honestly, there was never a choice. Thanks for being the most incredible person around! Check your DMs for a prize!"</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="glitch-screen">
+        <div class="alert-title">!!! HACK DETECTED !!!</div>
+        <p style="font-size: 1.5rem; margin: 25px 0; color:#fff;">ILLEGAL 'TAB' KEY BYPASS SEQUENCE APPLIED.</p>
+        <p class="red-text" id="wipe-timer" style="font-size: 2rem;">WIPING REPOSITORY IN: 5...</p>
+        <button class="cyber-btn" id="panic-yes-btn" style="margin-top: 40px; color: var(--alert-red); border-color: var(--alert-red);">ABORT WIPE (CLICK YES)</button>
+    </div>
+
+    <script>
+        // --- MATRIX BACKGROUND CODE ---
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const alphabet = "0101010101ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const rainDrops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0f6';
+            ctx.font = fontSize + 'px monospace';
+
+            for(let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+                
+                if(rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    rainDrops[i] = 0;
+                }
+                rainDrops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 30);
+
+        // Resize handler for matrix background
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // --- FAKE TERMINAL BOOT SEQUENCE ---
+        setTimeout(() => document.getElementById('log-1').style.display = 'block', 600);
+        setTimeout(() => document.getElementById('log-2').style.display = 'block', 1300);
+        setTimeout(() => document.getElementById('log-3').style.display = 'block', 2000);
+        setTimeout(() => {
+            document.getElementById('boot-loader').classList.add('hidden');
+            document.getElementById('challenge-screen').classList.remove('hidden');
+        }, 2800);
+
+
+        // --- THE UNTOUCHABLE "NO" BUTTON ---
+        const noBtn = document.getElementById('no-btn');
+        
+        function moveNoButton() {
+            const pad = 80;
+            const widthBound = window.innerWidth - noBtn.clientWidth - pad;
+            const heightBound = window.innerHeight - noBtn.clientHeight - pad;
+
+            const randomX = Math.max(pad, Math.floor(Math.random() * widthBound));
+            const randomY = Math.max(pad, Math.floor(Math.random() * heightBound));
+
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+        }
+
+        noBtn.addEventListener('mouseenter', moveNoButton);
+        noBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            moveNoButton();
+        });
+
+
+        // --- ANTI-CHEAT ENGINE & FAKE ALARM ---
+        const glitchScreen = document.getElementById('glitch-screen');
+        const timerText = document.getElementById('wipe-timer');
+        let audioCtx = null;
+        let countdownInt = null;
+
+        function triggerAlarmSound() {
+            // Generates a vintage computer alarm sound using internal browser audio
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime); // High pitch alarm
+            osc.frequency.linearRampToValueAtTime(440, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        function launchAntiCheat() {
+            glitchScreen.style.display = 'flex';
+            let count = 5;
+            
+            // Start the alarming audio loop
+            const alarmInterval = setInterval(triggerAlarmSound, 500);
+            
+            countdownInt = setInterval(() => {
+                count--;
+                timerText.innerText = `WIPING REPOSITORY IN: ${count}...`;
+                if(count <= 0) {
+                    clearInterval(countdownInt);
+                    clearInterval(alarmInterval);
+                    timerText.innerText = "OVERRIDE REQUIRED IMMEDIATELY!";
+                }
+            }, 1000);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if(e.key === 'Tab') {
+                e.preventDefault();
+                launchAntiCheat();
+            }
+        });
+        noBtn.addEventListener('focus', (e) => {
+            e.preventDefault();
+            launchAntiCheat();
+        });
+
+
+        // --- SUCCESS GRAND FINALE ---
+        const yesBtn = document.getElementById('yes-btn');
+        const panicYesBtn = document.getElementById('panic-yes-btn');
+        const challengeScreen = document.getElementById('challenge-screen');
+        const surpriseScreen = document.getElementById('surprise-screen');
+
+        function triggerSuccess() {
+            // Stop anti-cheat functions if they were active
+            clearInterval(countdownInt);
+            glitchScreen.style.display = 'none';
+            
+            // Swapping UI
+            challengeScreen.classList.add('hidden');
+            surpriseScreen.classList.remove('hidden');
+
+            // Epic confetti blast
+            let end = Date.now() + (4 * 1000);
+            (function frame() {
+                confetti({ particleCount: 4, angle: 60, spread: 60, origin: { x: 0, y: 0.7 } });
+                confetti({ particleCount: 4, angle: 120, spread: 60, origin: { x: 1, y: 0.7 } });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+
+        yesBtn.addEventListener('click', triggerSuccess);
+        panicYesBtn.addEventListener('click', triggerSuccess);
+    </script>
+</body>
+</html>
